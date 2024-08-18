@@ -54,7 +54,7 @@ impl_v128!(i16, 8);
 
 #[cfg(test)]
 mod tests {
-    use std::arch::wasm32::u8x16_splat;
+    use std::arch::wasm32::{i16x8_splat, u8x16_splat};
 
     use wasm_bindgen_test::wasm_bindgen_test;
 
@@ -84,6 +84,15 @@ mod tests {
         assert!(!res);
 
         let res = u8x16_reduce_or(u8x16_cycle(&[0, 1]));
+        assert!(res);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_i16x8_reduce_or() {
+        let res = i16x8_reduce_or(i16x8_splat(0));
+        assert!(!res);
+
+        let res = i16x8_reduce_or(i16x8_load(&[0, 0, 0, 0, 0, 0, 0, 1]));
         assert!(res);
     }
 }

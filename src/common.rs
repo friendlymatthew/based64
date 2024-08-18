@@ -1,8 +1,17 @@
-use std::arch::wasm32::u8x16_swizzle;
 use std::mem::MaybeUninit;
 
-use crate::impl_v128::u8x16_load;
-use crate::Error;
+#[derive(Copy, Clone, Debug)]
+pub struct Error;
+
+pub(super) fn decoded_len(input: usize) -> usize {
+    let mod4 = input % 4;
+    input / 4 * 3 + (mod4 - mod4 / 2)
+}
+
+fn encoded_len(input: usize) -> usize {
+    let mod3 = input % 3;
+    input / 3 * 4 + (mod3 + (mod3 + 1) / 2)
+}
 
 #[inline(always)]
 pub fn invert_index(array: Array) -> [u8; 16] {
@@ -36,12 +45,4 @@ impl Array {
     pub fn into_initialized(self) -> [usize; 16] {
         unsafe { std::mem::transmute(self.0) }
     }
-}
-
-#[inline]
-pub fn encode(data: [u8; 16]) -> Result<(), Error> {
-    let table = Array::new(|idx| idx + idx / 3);
-    let data = u8x16_swizzle(u8x16_load(&data), u8x16_load(&invert_index(table)));
-
-    Ok(())
 }

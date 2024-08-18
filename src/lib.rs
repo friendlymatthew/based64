@@ -1,24 +1,12 @@
 #![cfg(target_arch = "wasm32")]
 #![feature(simd_wasm64)]
 
+use common::{decoded_len, Error};
 use decode::decode;
 
+mod common;
 mod decode;
-mod encode;
 pub mod impl_v128;
-
-#[derive(Copy, Clone, Debug)]
-pub struct Error;
-
-fn decoded_len(input: usize) -> usize {
-    let mod4 = input % 4;
-    input / 4 * 3 + (mod4 - mod4 / 2)
-}
-
-fn encoded_len(input: usize) -> usize {
-    let mod3 = input % 3;
-    input / 3 * 4 + (mod3 + (mod3 + 1) / 2)
-}
 
 pub fn decode_to(data: &[u8], out: &mut Vec<u8>) -> Result<(), Error> {
     let n = data.len();
