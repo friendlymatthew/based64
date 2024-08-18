@@ -177,9 +177,4 @@ mod tests {
             });
         }
     }
-
-    #[wasm_bindgen_test]
-    fn decode_hello_world() -> Result<()> {
-        Ok(())
-    }
 }
