@@ -111,6 +111,8 @@ pub fn decode(ascii: &[u8; 16]) -> Result<v128> {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::BTreeSet;
+
     use wasm_bindgen_test::wasm_bindgen_test;
 
     use super::*;
@@ -158,7 +160,7 @@ mod tests {
 
     #[wasm_bindgen_test]
     fn test_check_valid_characters_2() {
-        let valid_base64_chars: Vec<u8> = [
+        let valid_base64_chars: BTreeSet<u8> = [
             b'A'..=b'Z', // Uppercase letters A-Z
             b'a'..=b'z', // Lowercase letters a-z
             b'0'..=b'9', // Digits 0-9
@@ -168,8 +170,11 @@ mod tests {
         .chain([b'+', b'/'].iter().copied())
         .collect();
 
-        for i in valid_base64_chars {
-            assert!(check_valid_characters(u8x16_splat(i)));
+        for i in 0..u8::MAX {
+            assert!(match valid_base64_chars.contains(&i) {
+                true => check_valid_characters(u8x16_splat(i)),
+                false => !check_valid_characters(u8x16_splat(i)),
+            });
         }
     }
 
