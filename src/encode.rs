@@ -1,14 +1,11 @@
 use std::arch::wasm32::{
-    i16x8_extend_high_u8x16, u16x8_add, u16x8_extend_low_u8x16, u16x8_mul, u16x8_shl, u8x16_ge,
-    u8x16_shr, u8x16_shuffle, u8x16_splat, u8x16_sub, u8x16_sub_sat, u8x16_swizzle, v128, v128_and,
-    v128_or,
+    i16x8_extend_high_u8x16, u16x8_add, u16x8_extend_low_u8x16, u16x8_shl, u8x16_ge, u8x16_shr,
+    u8x16_shuffle, u8x16_splat, u8x16_sub, u8x16_sub_sat, u8x16_swizzle, v128, v128_and, v128_or,
 };
 
 use anyhow::Result;
 
-use crate::impl_v128::{
-    u16x8_cycle, u16x8_to_array, u8x16_cycle, u8x16_load, u8x16_mask_splat, u8x16_to_array,
-};
+use crate::impl_v128::{u16x8_to_array, u8x16_cycle, u8x16_load, u8x16_mask_splat};
 
 pub(super) fn encode(data: &[u8; 16]) -> Result<v128> {
     let data = u8x16_load(data);
@@ -36,7 +33,7 @@ pub(super) fn encode(data: &[u8; 16]) -> Result<v128> {
         // shifted >> u16x8_cycle(&[2, 4, 6, 8])
         let pattern = [2, 4, 6, 8];
 
-        let (mut lo_shifted_arr, mut hi_shifted_arr) =
+        let (lo_shifted_arr, hi_shifted_arr) =
             (u16x8_to_array(lo_shifted), u16x8_to_array(hi_shifted));
 
         let mut sextets = [0u8; 16];
