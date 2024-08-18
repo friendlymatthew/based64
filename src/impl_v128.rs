@@ -1,4 +1,4 @@
-use std::arch::wasm32::{v128, v128_load};
+use std::arch::wasm32::{v128, v128_bitselect, v128_load};
 
 use paste::paste;
 
@@ -43,6 +43,15 @@ macro_rules! impl_v128 {
                 [<$ty x $lane_count _load>](&out)
             }
 
+            use std::arch::wasm32::[<$ty x $lane_count _splat>];
+
+            #[inline]
+            pub fn [<$ty x $lane_count _mask_splat>](mask: v128, select_if_true: $ty) -> v128 {
+                let splat_val = [<$ty x $lane_count _splat>](select_if_true);
+                let default_val = [<$ty x $lane_count _splat>](0 as $ty);
+                v128_bitselect(splat_val, default_val, mask)
+            }
+
         }
     };
 }
@@ -54,7 +63,7 @@ impl_v128!(i16, 8);
 
 #[cfg(test)]
 mod tests {
-    use std::arch::wasm32::{i16x8_splat, u8x16_splat};
+    use std::arch::wasm32::{i16x8_splat, u8x16_splat, v128_not};
 
     use wasm_bindgen_test::wasm_bindgen_test;
 
@@ -94,5 +103,21 @@ mod tests {
 
         let res = i16x8_reduce_or(i16x8_load(&[0, 0, 0, 0, 0, 0, 0, 1]));
         assert!(res);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_u16x8_mask_splat() {
+        let bitmask = u16x8_load(&[0, 0xFFFF, 0, 0xFFFF, 0, 0xFFFF, 0, 0xFFFF]);
+        let res = u16x8_mask_splat(bitmask, 67);
+
+        assert_eq!(u16x8_to_array(res), [0, 67, 0, 67, 0, 67, 0, 67]);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_v128_not() {
+        let res = i8x16_cycle(&[1, 2, 3, 0]);
+        let res = v128_not(res);
+
+        assert_eq!(i8x16_to_array(res)[0..4], [-2, -3, -4, -1])
     }
 }
