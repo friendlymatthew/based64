@@ -5,7 +5,7 @@ use decode::decode;
 
 mod decode;
 mod encode;
-pub mod v128;
+pub mod impl_v128;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Error;

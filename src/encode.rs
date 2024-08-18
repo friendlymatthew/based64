@@ -1,7 +1,7 @@
-use std::arch::wasm32::{u8x16_swizzle, v128_and};
+use std::arch::wasm32::u8x16_swizzle;
 use std::mem::MaybeUninit;
 
-use crate::v128::{load_u8x16, u8x16_cycle};
+use crate::impl_v128::u8x16_load;
 use crate::Error;
 
 #[inline(always)]
@@ -41,7 +41,7 @@ impl Array {
 #[inline]
 pub fn encode(data: [u8; 16]) -> Result<(), Error> {
     let table = Array::new(|idx| idx + idx / 3);
-    let data = u8x16_swizzle(load_u8x16(&data), load_u8x16(&invert_index(table)));
+    let data = u8x16_swizzle(u8x16_load(&data), u8x16_load(&invert_index(table)));
 
     Ok(())
 }

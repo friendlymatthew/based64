@@ -5,3 +5,6 @@ build:
 
 test:
     cargo test --target={{TARGET}}
+
+expand:
+    cargo expand --target={{TARGET}}

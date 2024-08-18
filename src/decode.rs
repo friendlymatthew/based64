@@ -3,7 +3,7 @@ use std::arch::wasm32::{
     u8x16_shr, u8x16_splat, u8x16_swizzle, v128, v128_and,
 };
 
-use crate::v128::{load_u8x16, u8x16_cycle, u8x16_reduce_or};
+use crate::impl_v128::{u8x16_cycle, u8x16_load, u8x16_reduce_or};
 use crate::Error;
 
 #[inline]
@@ -29,12 +29,12 @@ fn sextets(vectorized_ascii: v128, ascii_hashes: v128) -> v128 {
 
 #[inline]
 fn check_valid_characters(vectorized_ascii: v128) -> bool {
-    let lut_lo = load_u8x16(&[
+    let lut_lo = u8x16_load(&[
         0x15, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x13, 0x1A, 0x1B, 0x1B, 0x1B,
         0x1A,
     ]);
 
-    let lut_hi = load_u8x16(&[
+    let lut_hi = u8x16_load(&[
         0x10, 0x10, 0x01, 0x02, 0x04, 0x08, 0x04, 0x08, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10,
         0x10,
     ]);
@@ -47,7 +47,7 @@ fn check_valid_characters(vectorized_ascii: v128) -> bool {
 
 #[inline]
 pub fn decode(ascii: &[u8; 16]) -> Result<v128, Error> {
-    let vectorized_ascii = load_u8x16(ascii);
+    let vectorized_ascii = u8x16_load(ascii);
     let ascii_hashes = hash(vectorized_ascii);
     let sextets = sextets(vectorized_ascii, ascii_hashes);
 
@@ -64,7 +64,7 @@ pub fn decode(ascii: &[u8; 16]) -> Result<v128, Error> {
         // TODO sextet << [2, 4, 6, 8, 2, 4, 6, 8]
     }
 
-    Ok(load_u8x16(b"1234567890123456"))
+    Ok(u8x16_load(b"1234567890123456"))
 }
 
 #[cfg(test)]
@@ -72,27 +72,27 @@ mod tests {
     use wasm_bindgen_test::wasm_bindgen_test;
 
     use super::*;
-    use crate::v128::u8x16_to_byte_array;
+    use crate::impl_v128::u8x16_to_array;
 
     #[wasm_bindgen_test]
     fn test_hashes() {
-        let ascii = load_u8x16(b"AZM035+/2acz126m");
+        let ascii = u8x16_load(b"AZM035+/2acz126m");
         let ascii_hashes = hash(ascii);
 
         assert_eq!(
-            u8x16_to_byte_array(ascii_hashes),
+            u8x16_to_array(ascii_hashes),
             [4, 5, 4, 3, 3, 3, 2, 1, 3, 6, 6, 7, 3, 3, 3, 6]
         );
     }
 
     #[wasm_bindgen_test]
     fn test_sextets() {
-        let vectorized_ascii = load_u8x16(b"abcdefghabcdefgh");
+        let vectorized_ascii = u8x16_load(b"abcdefghabcdefgh");
         let ascii_hashes = hash(vectorized_ascii);
         let sextets = sextets(vectorized_ascii, ascii_hashes);
 
         assert_eq!(
-            u8x16_to_byte_array(sextets),
+            u8x16_to_array(sextets),
             [26, 27, 28, 29, 30, 31, 32, 33, 26, 27, 28, 29, 30, 31, 32, 33]
         )
     }
@@ -100,7 +100,7 @@ mod tests {
     #[wasm_bindgen_test]
     fn test_check_valid_characters() {
         for valid_ascii in [b"0123456788912345", b"abcdefghabcdefgh"].iter() {
-            let vectorized_ascii = load_u8x16(valid_ascii);
+            let vectorized_ascii = u8x16_load(valid_ascii);
             assert!(check_valid_characters(vectorized_ascii));
         }
 
