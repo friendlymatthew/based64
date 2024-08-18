@@ -1,14 +1,16 @@
 #![cfg(target_arch = "wasm32")]
 #![feature(simd_wasm64)]
 
-use common::{decoded_len, Error};
+use anyhow::anyhow;
+use common::decoded_len;
 use decode::decode;
 
 mod common;
 mod decode;
 pub mod impl_v128;
+use anyhow::Result;
 
-pub fn decode_to(data: &[u8], out: &mut Vec<u8>) -> Result<(), Error> {
+pub fn decode_to(data: &[u8], out: &mut Vec<u8>) -> Result<()> {
     let n = data.len();
     assert_eq!(n % 4, 0);
     let data = match data {
@@ -39,7 +41,7 @@ pub fn decode_to(data: &[u8], out: &mut Vec<u8>) -> Result<(), Error> {
     }
 
     if failed {
-        return Err(Error);
+        return Err(anyhow!("the decoding process failed unexpectedly"));
     }
 
     unsafe {
