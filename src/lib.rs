@@ -21,6 +21,10 @@ pub fn encode(data: &[u8]) -> Result<Vec<u8>> {
     Ok(ascii)
 }
 
+pub fn encode_to_utf8(data: &[u8]) -> Result<String> {
+    Ok(unsafe { String::from_utf8_unchecked(encode(data)?) })
+}
+
 /// [`decode`] takes ascii and returns its original binary representation.
 pub fn decode(ascii: &[u8]) -> Result<Vec<u8>> {
     let mut data = Vec::new();
@@ -164,6 +168,18 @@ mod tests {
         out = Vec::new();
         encode_to(raw_data, &mut out)?;
         assert_eq!(out, encoded_data);
+        Ok(())
+    }
+
+    #[wasm_bindgen_test]
+    fn test_readme_example() -> Result<()> {
+        let ascii = b"VGhlIGRvZyBsaWNrZWQgdGhlIG9pbCwgYW5kIGV2ZXJ5Ym9keSBsYXVnaGVkLg==";
+        let message = decode(ascii)?;
+        // The dog licked the oil, and everybody laughed.
+
+        let encoded_to_ascii = encode(&message)?;
+        assert_eq!(encoded_to_ascii, ascii.to_vec());
+
         Ok(())
     }
 }
