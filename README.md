@@ -4,9 +4,10 @@ A base64 codec using wasm32 SIMD intrinsics.
 
 ```rust
 use based64::{decode, encode};
-use anyhow;
+use wasm_bindgen::{wasm_bindgen, JsValue};
 
-fn main() -> anyhow::Result<()> {
+#[wasm_bindgen]
+fn main() -> Result<(), JsValue> {
   let ascii = b"VGhlIGRvZyBsaWNrZWQgdGhlIG9pbCwgYW5kIGV2ZXJ5Ym9keSBsYXVnaGVkLg==";
   let message = decode(ascii)?; // The dog licked the oil, and everybody laughed.
 

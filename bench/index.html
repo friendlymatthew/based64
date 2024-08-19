@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Based64</title>
+</head>
+<body>
+
+
+    <script type="module">
+        import init, {encode, decode} from "./pkg/based64.js";
+
+        async function run() {
+            await init();
+
+            let data = "a".repeat(10_000_000);
+
+            console.group("%cbased64 operations", "color: blue; font-weight: bold;");
+            console.time("based64_encode");
+            const bytes = new TextEncoder().encode(data);
+            const ascii_based64 = encode(bytes);
+            console.timeEnd("based64_encode");
+
+            console.time("based64_decode");
+            const raw_based64 = decode(ascii_based64);
+            const raw_based64_str = new TextDecoder().decode(raw_based64);
+            console.timeEnd("based64_decode");
+            console.groupEnd();
+
+
+            console.group("%cbtoa operations", "color: green; font-weight: bold;");
+            console.time("btoa_encode");
+            const ascii_btoa = window.btoa(data);
+            console.timeEnd("btoa_encode");
+
+            console.time("btoa_decode");
+            const raw_btoa = window.btoa(data);
+            console.timeEnd("btoa_decode");
+            console.groupEnd();
+
+            console.group("%conly based64 operations", "color: red; font-weight: bold;");
+
+            const wefbytes = new TextEncoder().encode(data);
+            console.time("only_based64_encode");
+            const wef_ascii_based64 = encode(wefbytes);
+            console.timeEnd("only_based64_encode");
+
+            console.time("only_based64_decode");
+            const wef_raw_based64 = decode(ascii_based64);
+            const wef_raw_based64_str = new TextDecoder().decode(wef_raw_based64);
+            console.timeEnd("only_based64_decode");
+            console.groupEnd();
+
+        }
+
+        alert("open up the console");
+
+        await run();
+    </script>
+
+</body>
+</html>
