@@ -9,3 +9,9 @@ expand:
 
 build:
     {{ SIMD128 }} cargo build --target={{TARGET}}
+
+build-wasm:
+    {{ SIMD128 }} wasm-pack build --target web
+
+clean-wasm:
+    rm -rf pkg

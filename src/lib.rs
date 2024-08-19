@@ -8,31 +8,35 @@ pub mod impl_v128;
 use std::arch::wasm32::v128;
 use std::slice;
 
-use anyhow::{anyhow, Result};
 use decode_chunk::{decode_chunk, decoded_len};
 use encode_chunk::{encode_chunk, encoded_len};
+use wasm_bindgen::prelude::wasm_bindgen;
+use wasm_bindgen::JsValue;
 
 /// [`encode`] converts bytes into a base64-encoded byte array.
-pub fn encode(data: &[u8]) -> Result<Vec<u8>> {
+#[wasm_bindgen]
+pub fn encode(data: &[u8]) -> Result<Vec<u8>, JsValue> {
     let mut ascii = Vec::new();
-    encode_to(data, &mut ascii)?;
+    encode_to(data, &mut ascii).map_err(|e| JsValue::from_str(&e.to_string()))?;
     Ok(ascii)
 }
 
-pub fn encode_to_utf8(data: &[u8]) -> Result<String> {
+#[wasm_bindgen]
+pub fn encode_to_utf8(data: &[u8]) -> Result<String, JsValue> {
     Ok(unsafe { String::from_utf8_unchecked(encode(data)?) })
 }
 
 /// [`decode`] takes ascii and returns its original binary representation.
-pub fn decode(ascii: &[u8]) -> Result<Vec<u8>> {
+#[wasm_bindgen]
+pub fn decode(ascii: &[u8]) -> Result<Vec<u8>, JsValue> {
     let mut data = Vec::new();
     decode_to(ascii, &mut data)?;
     Ok(data)
 }
 
-fn encode_to(data: &[u8], out: &mut Vec<u8>) -> Result<()> {
+fn encode_to(data: &[u8], out: &mut Vec<u8>) -> Result<(), String> {
     if data.is_empty() {
-        return Err(anyhow!("empty data!"));
+        return Err(String::from("empty data"));
     }
 
     out.reserve(encoded_len(data.len()) + 16);
@@ -52,7 +56,7 @@ fn encode_to(data: &[u8], out: &mut Vec<u8>) -> Result<()> {
     while start != end {
         let chunk = unsafe { slice::from_raw_parts(start, 16) };
         let chunk: &[u8; 16] = chunk.try_into().expect("Slice with incorrect length");
-        let encoded = encode_chunk(chunk)?;
+        let encoded = encode_chunk(chunk);
 
         unsafe {
             start = start.add(12);
@@ -72,7 +76,7 @@ fn encode_to(data: &[u8], out: &mut Vec<u8>) -> Result<()> {
         let mut temp_chunk = [0u8; 16];
         temp_chunk[0..chunk.len()].copy_from_slice(chunk);
 
-        let encoded = encode_chunk(&temp_chunk)?;
+        let encoded = encode_chunk(&temp_chunk);
 
         unsafe {
             start = start.add(chunk.len());
@@ -96,7 +100,7 @@ fn encode_to(data: &[u8], out: &mut Vec<u8>) -> Result<()> {
     Ok(())
 }
 
-pub fn decode_to(data: &[u8], out: &mut Vec<u8>) -> Result<()> {
+pub fn decode_to(data: &[u8], out: &mut Vec<u8>) -> Result<(), String> {
     let data = match data {
         [p @ .., b'=', b'='] | [p @ .., b'='] | p => p,
     };
@@ -138,7 +142,7 @@ pub fn decode_to(data: &[u8], out: &mut Vec<u8>) -> Result<()> {
     }
 
     if failed {
-        return Err(anyhow!("the decoding process failed unexpectedly"));
+        return Err(String::from("the decoding process failed unexpectedly"));
     }
 
     unsafe {
@@ -155,7 +159,7 @@ mod tests {
     use super::*;
 
     #[wasm_bindgen_test]
-    fn test_hello_world() -> Result<()> {
+    fn test_hello_world() -> Result<(), JsValue> {
         let encoded_data = b"SGVsbG8gV29ybGQ=";
         let raw_data = b"Hello World";
 
@@ -170,7 +174,7 @@ mod tests {
     }
 
     #[wasm_bindgen_test]
-    fn test_readme_example() -> Result<()> {
+    fn test_readme_example() -> Result<(), JsValue> {
         let ascii = b"VGhlIGRvZyBsaWNrZWQgdGhlIG9pbCwgYW5kIGV2ZXJ5Ym9keSBsYXVnaGVkLg==";
         let message = decode(ascii)?;
         // The dog licked the oil, and everybody laughed.

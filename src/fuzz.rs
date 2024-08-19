@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod tests {
+    use wasm_bindgen::JsValue;
     use wasm_bindgen_test::wasm_bindgen_test;
 
     use crate::{decode, encode};
@@ -27,7 +28,7 @@ mod tests {
     }
 
     #[wasm_bindgen_test]
-    fn fuzz() -> anyhow::Result<()> {
+    fn fuzz() -> Result<(), JsValue> {
         let valid_characters = valid_chars();
         let mut seed = 42;
 

@@ -3,8 +3,6 @@ use std::arch::wasm32::{
     u8x16_shuffle, u8x16_splat, u8x16_sub, u8x16_sub_sat, u8x16_swizzle, v128, v128_and, v128_or,
 };
 
-use anyhow::Result;
-
 use crate::impl_v128::{u16x8_to_array, u8x16_cycle, u8x16_load, u8x16_mask_splat};
 
 pub(super) fn encoded_len(input: usize) -> usize {
@@ -12,7 +10,7 @@ pub(super) fn encoded_len(input: usize) -> usize {
     input / 3 * 4 + (mod3 + (mod3 + 1) / 2)
 }
 
-pub(super) fn encode_chunk(data: &[u8; 16]) -> Result<v128> {
+pub(super) fn encode_chunk(data: &[u8; 16]) -> v128 {
     let data = u8x16_load(data);
     let data =
         u8x16_shuffle::<0, 1, 2, 16, 3, 4, 5, 16, 6, 7, 8, 16, 9, 10, 11, 16>(data, u8x16_splat(0));
@@ -64,5 +62,5 @@ pub(super) fn encode_chunk(data: &[u8; 16]) -> Result<v128> {
     let hashes = u8x16_shr(u16x8_add(u16x8_add(hashes, mask_splat_1), mask_splat_2), 4);
     let offsets = u8x16_swizzle(u8x16_cycle(&[191, 185, 185, 4, 4, 19, 16, !0]), hashes);
 
-    Ok(u8x16_sub(sextets, offsets))
+    u8x16_sub(sextets, offsets)
 }

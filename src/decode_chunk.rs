@@ -4,8 +4,6 @@ use std::arch::wasm32::{
     v128_and, v128_or,
 };
 
-use anyhow::{anyhow, Result};
-
 use crate::impl_v128::{u16x8_cycle, u16x8_to_array, u8x16_cycle, u8x16_load, u8x16_reduce_or};
 
 pub(super) fn decoded_len(input: usize) -> usize {
@@ -53,13 +51,13 @@ fn check_valid_characters(vectorized_ascii: v128) -> bool {
 }
 
 #[inline]
-pub(super) fn decode_chunk(ascii: &[u8; 16]) -> Result<v128> {
+pub(super) fn decode_chunk(ascii: &[u8; 16]) -> Result<v128, String> {
     let vectorized_ascii = u8x16_load(ascii);
     let ascii_hashes = hash(vectorized_ascii);
     let sextets = sextets(vectorized_ascii, ascii_hashes);
 
     if !check_valid_characters(vectorized_ascii) {
-        return Err(anyhow!("invalid ascii characters"));
+        return Err(String::from("invalid ascii characters"));
     }
 
     let low_sextets = u16x8_extend_low_u8x16(sextets);
