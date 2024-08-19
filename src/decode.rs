@@ -48,7 +48,7 @@ fn check_valid_characters(vectorized_ascii: v128) -> bool {
 }
 
 #[inline]
-pub(super) fn decode(ascii: &[u8; 16]) -> Result<v128> {
+pub(super) fn decode_chunk(ascii: &[u8; 16]) -> Result<v128> {
     let vectorized_ascii = u8x16_load(ascii);
     let ascii_hashes = hash(vectorized_ascii);
     let sextets = sextets(vectorized_ascii, ascii_hashes);

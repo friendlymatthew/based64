@@ -7,7 +7,7 @@ use anyhow::Result;
 
 use crate::impl_v128::{u16x8_to_array, u8x16_cycle, u8x16_load, u8x16_mask_splat};
 
-pub(super) fn encode(data: &[u8; 16]) -> Result<v128> {
+pub(super) fn encode_chunk(data: &[u8; 16]) -> Result<v128> {
     let data = u8x16_load(data);
     let data =
         u8x16_shuffle::<0, 1, 2, 16, 3, 4, 5, 16, 6, 7, 8, 16, 9, 10, 11, 16>(data, u8x16_splat(0));
@@ -29,7 +29,8 @@ pub(super) fn encode(data: &[u8; 16]) -> Result<v128> {
     let (lo_shifted, hi_shifted) = (v128_or(lo_low, hi_low), v128_or(lo_high, hi_high));
 
     let sextets = {
-        // todo: division is hard because it requires newton-rhapson’s method
+        // todo: currently scalar
+        // division is hard because it requires newton-rhapson’s method
         // shifted >> u16x8_cycle(&[2, 4, 6, 8])
         let pattern = [2, 4, 6, 8];
 

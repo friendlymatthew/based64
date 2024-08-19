@@ -1,21 +1,34 @@
 #![cfg(target_arch = "wasm32")]
 #![feature(simd_wasm64)]
 
-use std::arch::wasm32::v128;
-use std::slice::from_raw_parts;
-
-use anyhow::anyhow;
-use common::{decoded_len, encoded_len};
-use decode::decode;
-use encode::encode;
-
 mod common;
 mod decode;
 mod encode;
 pub mod impl_v128;
-use anyhow::Result;
 
-pub fn encode_to(data: &[u8], out: &mut Vec<u8>) -> Result<()> {
+use std::arch::wasm32::v128;
+use std::slice;
+
+use anyhow::{anyhow, Result};
+use common::{decoded_len, encoded_len};
+use decode::decode_chunk;
+use encode::encode_chunk;
+
+/// [`encode`] converts bytes into a base64-encoded byte array.
+pub fn encode(data: &[u8]) -> Result<Vec<u8>> {
+    let mut ascii = Vec::new();
+    encode_to(data, &mut ascii)?;
+    Ok(ascii)
+}
+
+/// [`decode`] takes ascii and returns its original binary representation.
+pub fn decode(ascii: &[u8]) -> Result<Vec<u8>> {
+    let mut data = Vec::new();
+    decode_to(ascii, &mut data)?;
+    Ok(data)
+}
+
+fn encode_to(data: &[u8], out: &mut Vec<u8>) -> Result<()> {
     if data.is_empty() {
         return Err(anyhow!("empty data!"));
     }
@@ -35,9 +48,9 @@ pub fn encode_to(data: &[u8], out: &mut Vec<u8>) -> Result<()> {
     };
 
     while start != end {
-        let chunk = unsafe { from_raw_parts(start, 16) };
+        let chunk = unsafe { slice::from_raw_parts(start, 16) };
         let chunk: &[u8; 16] = chunk.try_into().expect("Slice with incorrect length");
-        let encoded = encode(chunk)?;
+        let encoded = encode_chunk(chunk)?;
 
         unsafe {
             start = start.add(12);
@@ -51,13 +64,13 @@ pub fn encode_to(data: &[u8], out: &mut Vec<u8>) -> Result<()> {
     while start < end {
         let chunk = unsafe {
             let rest = end.offset_from(start) as usize;
-            std::slice::from_raw_parts(start, rest.min(12))
+            slice::from_raw_parts(start, rest.min(12))
         };
 
         let mut temp_chunk = [0u8; 16];
         temp_chunk[0..chunk.len()].copy_from_slice(chunk);
 
-        let encoded = encode(&temp_chunk)?;
+        let encoded = encode_chunk(&temp_chunk)?;
 
         unsafe {
             start = start.add(chunk.len());
@@ -98,7 +111,7 @@ pub fn decode_to(data: &[u8], out: &mut Vec<u8>) -> Result<()> {
 
     for chunk in &mut chunks {
         let ascii = chunk.try_into().expect("Slice with incorrect length");
-        let decoded = decode(ascii);
+        let decoded = decode_chunk(ascii);
         failed |= decoded.is_err();
         let decoded = decoded.unwrap();
 
@@ -112,7 +125,7 @@ pub fn decode_to(data: &[u8], out: &mut Vec<u8>) -> Result<()> {
     if !rest.is_empty() {
         let mut ascii = [b'A'; 16];
         ascii[0..rest.len()].copy_from_slice(rest);
-        let decoded = decode(&ascii);
+        let decoded = decode_chunk(&ascii);
         failed |= decoded.is_err();
         let decoded = decoded.unwrap();
 

@@ -22,6 +22,7 @@ macro_rules! impl_v128 {
 
             #[inline]
             pub fn [< $ty x $lane_count _reduce_or>](val: v128) -> bool {
+                // todo: this is just cumulative ||
                 let arr = [< $ty x $lane_count _to_array>](val);
                 let mut res = arr[0] != 0;
                 for &byte in &arr[1..] {
