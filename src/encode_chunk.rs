@@ -7,6 +7,11 @@ use anyhow::Result;
 
 use crate::impl_v128::{u16x8_to_array, u8x16_cycle, u8x16_load, u8x16_mask_splat};
 
+pub(super) fn encoded_len(input: usize) -> usize {
+    let mod3 = input % 3;
+    input / 3 * 4 + (mod3 + (mod3 + 1) / 2)
+}
+
 pub(super) fn encode_chunk(data: &[u8; 16]) -> Result<v128> {
     let data = u8x16_load(data);
     let data =

@@ -3,7 +3,7 @@
 A base64 codec using wasm32 SIMD intrinsics.
 
 ```rust
-use based64;
+use based64::{decode, encode};
 use anyhow;
 
 fn main() -> anyhow::Result<()> {

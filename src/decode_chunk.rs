@@ -8,6 +8,11 @@ use anyhow::{anyhow, Result};
 
 use crate::impl_v128::{u16x8_cycle, u16x8_to_array, u8x16_cycle, u8x16_load, u8x16_reduce_or};
 
+pub(super) fn decoded_len(input: usize) -> usize {
+    let mod4 = input % 4;
+    input / 4 * 3 + (mod4 - mod4 / 2)
+}
+
 #[inline]
 fn hash(ascii: v128) -> v128 {
     let shifted = i8x16_shr(ascii, 4);

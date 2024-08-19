@@ -55,8 +55,8 @@ macro_rules! impl_v128 {
             use std::arch::wasm32::[<$ty x $lane_count _splat>];
 
             /// `[<$ty x $lane_count _mask_splat>]` is based on the bitmask,
-            /// if true => use `select_if_true`
-            /// if false => 0
+            ///       where true => use `select_if_true`
+            ///             false => 0
             #[inline]
             pub fn [<$ty x $lane_count _mask_splat>](mask: v128, select_if_true: $ty) -> v128 {
                 let splat_val = [<$ty x $lane_count _splat>](select_if_true);
