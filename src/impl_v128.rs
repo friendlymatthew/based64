@@ -5,12 +5,16 @@ use paste::paste;
 macro_rules! impl_v128 {
     ($ty:ty, $lane_count:expr) => {
         paste! {
+
+            /// [< $ty x $lane_count _load>] loads data into a 128-bit vector.
             #[inline]
             pub fn [< $ty x $lane_count _load>](data: &[$ty; $lane_count]) -> v128 {
                  unsafe { v128_load(data.as_ptr() as *const v128) }
             }
 
 
+            /// `[< $ty x $lane_count  _to_array>]` copies contents of the
+            /// 128-bit vector into a array with the respective type and lane size.
             #[inline]
             pub fn [< $ty x $lane_count  _to_array>](val: v128) -> [$ty; $lane_count] {
                 let mut buf = [0 as $ty; $lane_count];
@@ -20,6 +24,8 @@ macro_rules! impl_v128 {
                 buf
             }
 
+            /// `[< $ty x $lane_count _reduce_or>]` returns the cumulative
+            /// bitwise || across the elements of the vector.
             #[inline]
             pub fn [< $ty x $lane_count _reduce_or>](val: v128) -> bool {
                 // todo: this is just cumulative ||
@@ -31,6 +37,8 @@ macro_rules! impl_v128 {
                 res
             }
 
+            /// `[<$ty x $lane_count _cycle>]` repeatedly
+            /// applies the pattern provided till the vector is full.
             #[inline]
             pub fn [<$ty x $lane_count _cycle>](pattern: &[$ty]) -> v128 {
                 let mut out = [pattern[0]; $lane_count];

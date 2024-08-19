@@ -1,9 +1,9 @@
 #![cfg(target_arch = "wasm32")]
-#![feature(simd_wasm64)]
 
 mod common;
-mod decode;
-mod encode;
+mod decode_chunk;
+mod encode_chunk;
+mod fuzz;
 pub mod impl_v128;
 
 use std::arch::wasm32::v128;
@@ -11,8 +11,8 @@ use std::slice;
 
 use anyhow::{anyhow, Result};
 use common::{decoded_len, encoded_len};
-use decode::decode_chunk;
-use encode::encode_chunk;
+use decode_chunk::decode_chunk;
+use encode_chunk::encode_chunk;
 
 /// [`encode`] converts bytes into a base64-encoded byte array.
 pub fn encode(data: &[u8]) -> Result<Vec<u8>> {

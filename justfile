@@ -1,10 +1,11 @@
 TARGET := "wasm32-unknown-unknown"
-
-build:
-    cargo build --target={{TARGET}}
+SIMD128 := "RUSTFLAGS=\"-C target-feature=+simd128\""
 
 test:
-    cargo test --target={{TARGET}}
+    {{ SIMD128 }} cargo test --target={{TARGET}}
 
 expand:
-    cargo expand --target={{TARGET}}
+    {{ SIMD128 }} cargo expand --target={{TARGET}}
+
+build:
+    {{ SIMD128 }} cargo build --target={{TARGET}}
