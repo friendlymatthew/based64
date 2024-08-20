@@ -54,10 +54,10 @@ pub(super) fn encode_chunk(data: &[u8; 16]) -> v128 {
     let hashes = u8x16_sub_sat(sextets, u8x16_splat(0x0A));
 
     let bitmask_1 = u8x16_ge(sextets, u8x16_splat(0x34));
-    let mask_splat_1 = u8x16_mask_splat(bitmask_1, 0x0f);
+    let mask_splat_1 = u8x16_mask_splat(bitmask_1, 0x0f, 0);
 
     let bitmask_2 = u8x16_ge(sextets, u8x16_splat(0x3e));
-    let mask_splat_2 = u8x16_mask_splat(bitmask_2, 0x1c);
+    let mask_splat_2 = u8x16_mask_splat(bitmask_2, 0x1c, 0);
 
     let hashes = u8x16_shr(u16x8_add(u16x8_add(hashes, mask_splat_1), mask_splat_2), 4);
     let offsets = u8x16_swizzle(u8x16_cycle(&[191, 185, 185, 4, 4, 19, 16, !0]), hashes);

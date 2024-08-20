@@ -58,9 +58,9 @@ macro_rules! impl_v128 {
             ///       where true => use `select_if_true`
             ///             false => 0
             #[inline]
-            pub fn [<$ty x $lane_count _mask_splat>](mask: v128, select_if_true: $ty) -> v128 {
-                let splat_val = [<$ty x $lane_count _splat>](select_if_true);
-                let default_val = [<$ty x $lane_count _splat>](0 as $ty);
+            pub fn [<$ty x $lane_count _mask_splat>](mask: v128, if_true: $ty, if_false: $ty) -> v128 {
+                let splat_val = [<$ty x $lane_count _splat>](if_true);
+                let default_val = [<$ty x $lane_count _splat>](if_false);
                 v128_bitselect(splat_val, default_val, mask)
             }
 
@@ -120,7 +120,7 @@ mod tests {
     #[wasm_bindgen_test]
     fn test_u16x8_mask_splat() {
         let bitmask = u16x8_load(&[0, 0xFFFF, 0, 0xFFFF, 0, 0xFFFF, 0, 0xFFFF]);
-        let res = u16x8_mask_splat(bitmask, 67);
+        let res = u16x8_mask_splat(bitmask, 67, 0);
 
         assert_eq!(u16x8_to_array(res), [0, 67, 0, 67, 0, 67, 0, 67]);
     }
