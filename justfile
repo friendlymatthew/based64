@@ -18,3 +18,6 @@ clean-wasm:
 
 bench:
     just clean-wasm && just build-wasm && rm -rf bench/pkg && cp -r pkg bench/ && go run bench/server.go
+
+run:
+    go run bench/server.go

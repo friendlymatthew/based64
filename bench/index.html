@@ -1,62 +1,151 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Based64</title>
-</head>
-<body>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Based64</title>
+    </head>
+    <body>
+        <script type="module">
+            import init, {
+                encode,
+                decode,
+                base64_decode,
+                base64_encode,
+                btoa,
+                atob,
+            } from "./pkg/based64.js";
 
+            const data = "a".repeat(10_000_000);
 
-    <script type="module">
-        import init, {encode, decode} from "./pkg/based64.js";
+            function print_statistics(
+                codec_name,
+                encode_delta,
+                decode_delta,
+                raw_string,
+                comments,
+            ) {
+                if (raw_string !== data) {
+                    console.error(
+                        `${raw_string} : ${codec_name}\n${data} : Expected`,
+                    );
+                }
 
-        async function run() {
-            await init();
+                console.log(
+                    `Encode: ${encode_delta} ms\tDecode: ${decode_delta} ms\t ${codec_name} ${comments}`,
+                );
+            }
 
-            let data = "a".repeat(10_000_000);
+            async function run() {
+                await init();
 
-            console.group("%cbased64 operations", "color: blue; font-weight: bold;");
-            console.time("based64_encode");
-            const bytes = new TextEncoder().encode(data);
-            const ascii_based64 = encode(bytes);
-            console.timeEnd("based64_encode");
+                // raw based64 encode()
+                let bytes = new TextEncoder().encode(data);
+                let start = performance.now();
+                let ascii = encode(bytes);
+                let end = performance.now();
+                let encode_diff = end - start;
 
-            console.time("based64_decode");
-            const raw_based64 = decode(ascii_based64);
-            const raw_based64_str = new TextDecoder().decode(raw_based64);
-            console.timeEnd("based64_decode");
-            console.groupEnd();
+                // raw based64 decode()
+                start = performance.now();
+                let raw = decode(ascii);
+                end = performance.now();
+                let decode_diff = end - start;
 
+                print_statistics(
+                    "raw based64",
+                    encode_diff,
+                    decode_diff,
+                    new TextDecoder().decode(raw),
+                    "no text decoder! Just uint8array <-> uint8array",
+                );
 
-            console.group("%cbtoa operations", "color: green; font-weight: bold;");
-            console.time("btoa_encode");
-            const ascii_btoa = window.btoa(data);
-            console.timeEnd("btoa_encode");
+                // based64 encode()
+                start = performance.now();
+                bytes = new TextEncoder().encode(data);
+                ascii = encode(bytes);
+                let asciiStr = new TextDecoder().decode(ascii);
+                end = performance.now();
+                encode_diff = end - start;
 
-            console.time("btoa_decode");
-            const raw_btoa = window.btoa(data);
-            console.timeEnd("btoa_decode");
-            console.groupEnd();
+                // based64 decode()
+                start = performance.now();
+                bytes = new TextEncoder().encode(asciiStr);
+                raw = decode(bytes);
+                let rawStr = new TextDecoder().decode(raw);
+                end = performance.now();
+                decode_diff = end - start;
 
-            console.group("%conly based64 operations", "color: red; font-weight: bold;");
+                print_statistics(
+                    "based64",
+                    encode_diff,
+                    decode_diff,
+                    rawStr,
+                    "encode/decode",
+                );
 
-            const wefbytes = new TextEncoder().encode(data);
-            console.time("only_based64_encode");
-            const wef_ascii_based64 = encode(wefbytes);
-            console.timeEnd("only_based64_encode");
+                // browser atobtoa
+                start = performance.now();
+                ascii = window.btoa(data);
+                end = performance.now();
+                encode_diff = end - start;
 
-            console.time("only_based64_decode");
-            const wef_raw_based64 = decode(ascii_based64);
-            const wef_raw_based64_str = new TextDecoder().decode(wef_raw_based64);
-            console.timeEnd("only_based64_decode");
-            console.groupEnd();
+                start = performance.now();
+                raw = window.atob(ascii);
+                end = performance.now();
+                decode_diff = end - start;
 
-        }
+                print_statistics(
+                    "browser",
+                    encode_diff,
+                    decode_diff,
+                    raw,
+                    "atob/btoa",
+                );
 
-        alert("open up the console");
+                // based64 atobtoa
+                start = performance.now();
+                ascii = btoa(data);
+                end = performance.now();
+                encode_diff = end - start;
 
-        await run();
-    </script>
+                start = performance.now();
+                raw = atob(ascii);
+                end = performance.now();
+                decode_diff = end - start;
 
-</body>
+                print_statistics(
+                    "based64",
+                    encode_diff,
+                    decode_diff,
+                    raw,
+                    "atob/btoa String <-> String, fully encapsulated in Rust",
+                );
+
+                // base64 (rust crate) encode/decode
+
+                start = performance.now();
+                bytes = new TextEncoder().encode(data);
+                ascii = base64_encode(bytes);
+                end = performance.now();
+                encode_diff = end - start;
+
+                start = performance.now();
+                bytes = new TextEncoder().encode(ascii);
+                raw = base64_decode(bytes);
+                rawStr = new TextDecoder().decode(raw);
+                end = performance.now();
+                decode_diff = end - start;
+
+                print_statistics(
+                    "base64 (rust crate)",
+                    encode_diff,
+                    decode_diff,
+                    rawStr,
+                    "encode/decode with help of TextEncoder/Decoder",
+                );
+            }
+
+            await run();
+        </script>
+    </body>
 </html>

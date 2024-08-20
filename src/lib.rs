@@ -1,5 +1,6 @@
 #![cfg(target_arch = "wasm32")]
 
+mod base64;
 mod decode_chunk;
 mod encode_chunk;
 mod fuzz;
@@ -12,6 +13,18 @@ use decode_chunk::{decode_chunk, decoded_len};
 use encode_chunk::{encode_chunk, encoded_len};
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
+
+/// [`atob`] decodes a string of data from an ascii string.
+#[wasm_bindgen]
+pub fn atob(ascii: String) -> Result<String, JsValue> {
+    Ok(unsafe { String::from_utf8_unchecked(decode(ascii.as_bytes())?)})
+}
+
+/// [`btoa`] encodes a string of data to an ascii string.
+#[wasm_bindgen]
+pub fn btoa(binary_string: String) -> Result<String, JsValue> {
+    encode_to_utf8(binary_string.as_bytes())
+}
 
 /// [`encode`] converts bytes into a base64-encoded byte array.
 #[wasm_bindgen]
