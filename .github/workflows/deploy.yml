@@ -16,19 +16,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install Homebrew
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential curl file git
-          sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
-          eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
-
-      - name: Install just
-        run: brew install just
-
-      - name: Install wabt
-        run: brew install wabt
-
       - name: Set up Rust with nightly
         uses: actions-rs/toolchain@v1
         with:
@@ -37,6 +24,9 @@ jobs:
 
       - name: Install wasm32-unknown-unknown target
         run: rustup target add wasm32-unknown-unknown
+
+      - name: Install just
+        run: cargo install just
 
       - name: Install wasm-bindgen-cli
         run: cargo install wasm-bindgen-cli
