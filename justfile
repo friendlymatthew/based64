@@ -21,3 +21,6 @@ bench:
 
 run:
     go run bench/server.go
+
+wat:
+    wasm2wat pkg/based64_bg.wasm -o based64.wat
