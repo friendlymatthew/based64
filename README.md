@@ -18,6 +18,25 @@ fn main() -> Result<(), JsValue> {
 }
 ```
 
+or
+```typescript
+import init, {
+    encode,
+    decode,
+} from "./pkg/based64.js";
+
+async function run(): boolean {
+    await init();
+    
+    let data = "howdy";
+    let bytes = new TextEncoder().encode(data);
+    let ascii: Uint8Array = encode(bytes);
+    let rawString = decode(ascii);
+    
+    return data === rawString;
+}
+```
+
 ## Requirements
 
 ```bash
@@ -26,6 +45,18 @@ rustup target add wasm32-unknown-unknown
 
 RUSTFLAGS=\"-C target-feature=+simd128 cargo test --target=wasm32-unknown-unknown
 ```
+
+### Benchmarks
+To run benchmarks, run `just bench`. It should lead you to a web page, you can view the console. 
+
+The benchmark rules are very simple, it must follow `window.btoa` and `window.atob`'s function header: `String` -> `String`. 
+Since certain functions have different function signatures, the work needed to convert into a `String` is included in the measurement. 
+
+Codecs measured:
+- `base64` with `wasm_bindgen` bindings
+- `window.atob()`, `window.btoa()`
+- `based64` `Uint8Array` -> `Uint8Array` with `wasm_bindgen` bindings
+- `based64` `String` -> `String` with `wasm_bindgen` bindings
 
 ## Resources
 
